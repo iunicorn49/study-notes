@@ -1,7 +1,24 @@
-const A = require('./A')
+const EventEmitter = require('events')
 
-const B = require('./B')
+class MyEvent extends EventEmitter {}
 
-console.log(A)
+const ce = new MyEvent()
 
-console.log(B)
+function action () {
+	console.log('action')
+}
+
+function move () {
+	console.log('move')
+}
+
+ce.on('test', action)
+ce.on('test', move)
+
+setInterval(() => {
+	ce.emit('test')
+}, 1000)
+
+setTimeout(() => {
+	ce.removeAllListeners('test')
+}, 3001)

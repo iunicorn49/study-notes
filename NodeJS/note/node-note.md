@@ -32,11 +32,329 @@
 
 ### CommonJS
 
+> NodeJS的模块化规范 .
+
 - 每个文件时一个模块, 都有自己的作用域 .
+
 - 在模块内部, **module** 变量代表模块本身 .
+
 - **module.exports** 属性代表模块对外的接口 .
+
 - **module** 被加载的时候(通过 **require** 函数), 会被执行一次, 加载后缓存 .
+
 - 一旦出现某个模块被循环加载, 就只输出已经执行的部分, 还未执行的部分不会输出 .
 
+- **module.exports** 与 **exports** 的区别: 后者是前者的快捷方式, 绝大部分情况下是一个东西, 注意, 不要随便修改 **exports** 的指向 .
 
+  ```javascript
+  exports.something = 'something'
+  module.exports.something = 'something'
+  
+  // 上面两句话是一样的
+  
+  exports = 'something' // 这个是错误的, 会导致找不到该模块
+  module.exports = 'something' // 这个可以正常使用, 该模块就是 something
+  ```
+
+### global
+
+> 全局对象, 对应, 浏览器的 window , 自带许多常用的 API .
+
+- **global** 可以声明全局变量, `global.varName = something` , 如此做, 即便没有在模块中导出, 只要引入该模块, 也可以直接调用 .
+- **setImmediate** 和 timeout 与 interal 差不多, 不过不需要传入时间, 在当前事件队列完成时调用, 这条命令, 将自己插入下一次事件队列的第一位 .
+
+### process
+
+> 进程 .
+
+#### 常用API
+
+```javascript
+const {argv, argv0, execArgv, execPath, env } = process
+
+argv.forEach(item => {
+	console.log(item)
+	// item === /usr/local/bin/node (node 所安装的路径)
+	// item === /Users/zlk/个人/study-notes/NodeJS/demo/index.js (当前文件路径)
+	// 当启动脚本时, 携带参数时, 参数也会被依次读取, 例如: node demo.js --test a=1 b=2
+})
+
+console.log('argv0: ', argv0) // 并没什么卵用
+
+console.log('execArgv: ', execArgv) // 可以打印脚本之前的参数, 返回一个数组, 同 argv, 例如: node --inspect demo.js
+
+console.log('execPath: ', execPath) // 该脚本路径
+
+console.log('env: ', env) // 打印当前的执行环境, 各种配置项
+
+console.log('cwd: ', process.cwd()) // 当前路径
+
+process.nextTick(() => { // 在当前事件队列完成时调用, 优先级比 setImmediate 高, 因为, 这条命令, 将自己插入当前事件队列的最后一个
+    console.log('nextTick')
+})
+```
+
+## 常用 API
+
+### path
+
+> 路径相关 .
+
+#### normalize
+
+> 格式化路径, 常用于处理 `//` 和 `..` , 这些跟路径有关的容易写错的特殊符号 .
+
+```javascript
+const { normalize } = require('path')
+let pathStr = '/usr//local//bin'
+console.log(normalize(pathStr)) // /usr/local/bin
+```
+
+#### join
+
+> 拼接路径, 会调用 **normalize** .
+
+```javascript
+const { join } = require('path')
+console.log(join('/one', 'two', '//three')) // /one/two/three
+console.log(join('/one', '../two', '//three')) // /two/three
+```
+
+#### resolve
+
+> 相对路径解析成绝对路径 .
+
+```javascript
+const { resolve } = require('path')
+console.log(resolve('./')) // /Users/zlk/个人/study-notes/NodeJS
+```
+
+#### basename  dirname  extname
+
+> 文件名, 文件所在路径, 文件拓展名 .
+
+```javascript
+const { basename, dirname, extname } = require('path')
+const filePath = '/usr/local/bin/readme.md'
+
+console.log(basename(filePath)) // readme.md
+console.log(dirname(filePath)) // /usr/local/bin
+console.log(extname(filePath)) // .md
+```
+
+#### parse  format
+
+> **parse** 解析文件名, 可以解析出文件名, 文件所在路径, 文件拓展名 , **format** 是前者的逆向操作 .
+
+```javascript
+const { parse, format } = require('path')
+const filePath = '/usr/local/bin/readme.md'
+
+let parseFile = parse(filePath)
+let formatFile = format(parseFile)
+
+console.log(parseFile)
+// { root: '/',
+//   dir: '/usr/local/bin',
+//   base: 'readme.md',
+//   ext: '.md',
+//   name: 'readme' }
+
+console.log(formatFile) // /usr/local/bin/readme.md
+```
+
+#### sep  delimiter  win32  posix
+
+> 操作系统相关 .
+
+```javascript
+const { 
+	sep, // 路径分隔符
+	delimiter, // path的分隔符
+	win32, // 直接查看 window操作系统下面的相关属性的值
+	posix // 上面的一部分
+} = require('path')
+
+console.log('sep: ', sep)
+console.log('delimiter: ', delimiter)
+console.log('win32: ', win32)
+```
+
+#### __dirname
+
+> 文件绝对路径 .
+
+### Buffer
+
+> 处理二进制数据流 .
+>
+> 实例类似整数数组, 大小固定 , 每一项都用16进制表示(不确定) .
+>
+> C++ 代码在 V8 堆外分配物理内存 .
+
+#### alloc
+
+> 创建一个 **Buffer** .
+
+#### form
+
+> 基于数组或字符串(默认基于utf-8), 创建一个 **Buffer** .
+
+####byteLength
+
+> 查看字符串占的字节数 .
+
+```javascript
+console.log('Buffer_英文: ', Buffer.byteLength('abc')) // 3
+console.log('Buffer_中文: ', Buffer.byteLength('一二三')) // 9
+```
+
+####isBuffer
+
+> 判断对象是否是 **Buffer** .
+
+#### concat
+
+> 拼接 **Buffer** , 传入一个数组, 数组的每一项都必须是 **Buffer对象** .
+
+```javascript
+const b1 = Buffer.from('Hello')
+const b2 = Buffer.from(' ')
+const b3 = Buffer.from('World')
+const b4 = Buffer.from(' ')
+const b5 = Buffer.from('!')
+
+console.log(b1, b2, b3, b4, b5)
+// <Buffer 48 65 6c 6c 6f> <Buffer 20> <Buffer 57 6f 72 6c 64> <Buffer 20> <Buffer 21>
+
+let concatTest = Buffer.concat([b1, b2, b3, b4, b5])
+console.log(concatTest.toString()) // Hello World !
+```
+
+#### length  toString  fill  equals  indexOf  copy
+
+> 长度, 转字符串, 填充, 判断 buffer 里的内容是否相等, 同数组(找字符), copy
+
+```javascript
+const buf = Buffer.from('Hello')
+
+/** length */
+console.log(buf.length) // 5
+const buf2 = Buffer.alloc(10)
+console.log(buf2.length) // 10
+
+/** toString */
+console.log(buf.toString('base64')) // SGVsbG8=, 不传参数, 默认是 utf-8, 出来就是 Hello
+
+/** fill */
+const buf3 = Buffer.allocUnsafe(10)
+console.log(buf3) // allocUnsafe 生成的 buffer , 内容是不确定的
+console.log(buf3.fill(9))
+// <Buffer 09 09 09 09 09 09 09 09 09 09>, 可以传入第二第三个参数, 代表从哪里开始填充, 至哪里结束
+
+/** equals */
+const e1 = Buffer.from('test')
+const e2 = Buffer.from('test')
+const e3 = Buffer.from('TEST')
+console.log(e1.equals(e2)) // true
+console.log(e1.equals(e3)) // false
+
+/** indexOf lastIndexOf */
+const I1 = Buffer.from('ABBC')
+console.log(I1.indexOf('B')) // 1
+console.log(I1.lastIndexOf('B')) // 2
+console.log(I1.indexOf('D')) // -1
+```
+
+###events
+
+```javascript
+const EventEmitter = require('events')
+
+class MyEvent extends EventEmitter {} // 首先继承node内置的events类
+
+const ce = new MyEvent()
+
+ce.on('test', () => { // 监听事件名
+	console.log('test 触发')
+})
+
+setInterval(() => {
+	ce.emit('test') // 触发事件
+}, 2000)
+```
+
+#### new EventEmitter.on
+
+> 注册监听器 .
+
+#### new EventEmitter.emit
+
+> 触发事件 .
+
+#### new EventEmitter.once
+
+> 只触发一次 .
+
+####new EventEmitter.removeListener
+
+> 移除事件 .
+
+```javascript
+const EventEmitter = require('events')
+
+class MyEvent extends EventEmitter {}
+
+const ce = new MyEvent()
+
+function action () {
+	console.log('action')
+}
+
+function move () {
+	console.log('move')
+}
+
+ce.on('test', action)
+ce.on('test', move)
+
+setInterval(() => {
+	ce.emit('test')
+}, 1000)
+
+setTimeout(() => {
+	ce.removeListener('test', move) // 后续可以传入多个参数, 同时移除多个事件
+}, 2001)
+```
+
+#### new EventEmitter.removeAllListeners
+
+> 移除所有事件 .
+
+```javascript
+const EventEmitter = require('events')
+
+class MyEvent extends EventEmitter {}
+
+const ce = new MyEvent()
+
+function action () {
+	console.log('action')
+}
+
+function move () {
+	console.log('move')
+}
+
+ce.on('test', action)
+ce.on('test', move)
+
+setInterval(() => {
+	ce.emit('test')
+}, 1000)
+
+setTimeout(() => {
+	ce.removeAllListeners('test')
+}, 3001)
+```
 
