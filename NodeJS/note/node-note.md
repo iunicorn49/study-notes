@@ -358,3 +358,240 @@ setTimeout(() => {
 }, 3001)
 ```
 
+### fs
+
+> 文件操作系统 .
+
+#### readFile
+
+> 异步读取文件 .	
+
+| 参数     | 类型     | 备注                                                         |
+| -------- | -------- | ------------------------------------------------------------ |
+| 路径     | String   | 必填                                                         |
+| decode   | String   | 选填, 默认直接返回 **Buffer** 对象, 可以选择 `utf-8` 等, 直接读取文件, 返回字符串 . |
+| 回调函数 | Function | 必填, 参数: **err\|file** .                                  |
+
+#### fs.readFileSync
+
+> 同步读取文件, 不需要传递回调函数 .
+
+```javascript
+const fs = require('fs')
+const { join } = require('path')
+
+let data = fs.readFileSync(join(__dirname, './files/hehe.js'), 'utf-8')
+
+console.log(data)
+```
+
+#### fs.writeFile
+
+> 写文件 .
+
+| 参数     | 类型           | 备注                                         |
+| -------- | -------------- | -------------------------------------------- |
+| 路径     | String         | 必填                                         |
+| 内容     | String\|Buffer | 必填, 写入的信息, 如果是Buffer会忽略配置项 . |
+| 配置项   | Object\|String | 看文档吧 .                                   |
+| 回调函数 | Function       | 必填 .                                       |
+
+```javascript
+const fs = require('fs')
+const { join } = require('path')
+
+const word = 'Hello world'
+
+fs.writeFile(join(__dirname, './files/write.js'), word, {
+	encoding: 'utf-8'
+}, err => {
+	if (err) throw err
+	console.log('done')
+})
+```
+
+#### fs.stat
+
+>查看文件信息 .
+
+```javascript
+const fs = require('fs')
+const { join } = require('path')
+
+fs.stat(join(__dirname, './files/hehe.js'), (err, stat) => {
+	if (err) throw err
+	console.log(stat) // stat对象不只有这些信息, 还有其他方法和属性, 具体看文档 .
+})
+```
+
+#### fs.rename
+
+> 重命名 .
+
+```javascript
+const fs = require('fs')
+const { join } = require('path')
+
+fs.rename(join(__dirname, './files/write.js'), 'change.js', err => {
+	if (err) throw err
+	console.log('done')
+})
+// vscode 调试环境下, 会将文件移动到根目录 .
+```
+
+#### fs.unlink
+
+> 删除文件 .
+
+```javascript
+const fs = require('fs')
+const { join } = require('path')
+
+fs.unlink(join(__dirname, './files/wtf.js'), err => {
+	if (err) throw err
+	console.log('done')
+})
+```
+
+#### fs.readdir
+
+> 查看文件夹 .
+
+```javascript
+const fs = require('fs')
+const { join } = require('path')
+
+fs.readdir(join(__dirname, './files/'), (err, files) => {
+	if (err) throw err
+	console.log(files) // 数组, 文件夹下所有的文件.
+})
+```
+
+#### fs.mkdir
+
+> 创建文件夹 .
+
+```javascript
+const fs = require('fs')
+const { join } = require('path')
+
+fs.mkdir(join(__dirname, './test'), err => {
+	if (err) throw err
+	console.log('done')
+})
+```
+
+#### fs.rmdir
+
+> 删除文件夹 .
+
+```javascript
+const fs = require('fs')
+const { join } = require('path')
+
+fs.rmdir(join(__dirname, './test'), err => {
+	if (err) throw err
+	console.log('done')
+})
+```
+
+#### fs.watch
+
+> 监听文件或文件夹的变动 .
+
+```javascript
+const fs = require('fs')
+const { join } = require('path')
+
+fs.watch(join(__dirname, './files/'), {
+	recursive: true // 是否监视该文件夹下所有的文件夹
+}, (eventType, filename) => {
+	console.log(eventType)
+	console.log(filename)
+})
+```
+
+#### fs.createReadStream
+
+> 通过流的方式读取 .
+
+```javascript
+const fs = require('fs')
+const { join } = require('path')
+
+const rs = fs.createReadStream(join(__dirname, './files/test.js')) // 以流对象的方式读取文件, 指定文件路径
+
+rs.pipe(process.stdout) // 输出文件
+```
+
+#### fs.createWriteStream
+
+> 通过流的方式写入, 只能写入 **Buffer** 或 **String** .
+
+```javascript
+const fs = require('fs')
+const { join } = require('path')
+
+const ws = fs.createWriteStream(join(__dirname, './files/test.js')) // 以流对象的方式写入文件, 指定文件路径
+
+const tid = setInterval(() => {
+	const num = parseInt(Math.random() * 10)
+	console.log(num)
+	if (num < 8) {
+		ws.write(`${num}`) // 写入文件
+	} else {
+		clearInterval(tid)
+		ws.end() // 停止写入
+	}
+}, 500)
+
+ws.on('finish', () => { // finish 是 WriteStream 自己的事件, 监听文件是否写完 
+	console.log('写完了')
+})
+```
+
+## 技巧
+
+### 解决回调地狱
+
+#### promisify
+
+> node内置的Promise工具 .
+
+```javascript
+const fs = require('fs')
+const { join } = require('path')
+const { promisify } = require('util')
+
+const read = promisify(fs.readFile)
+
+read(join(__dirname, './files/test.js')).then(file => {
+	console.log(file)
+}).catch(err => {
+	throw err
+})
+```
+
+#### async await
+
+> 需要依赖node内置的Promise工具 以及 `try catch` 方法 .
+
+```javascript
+const fs = require('fs')
+const { join } = require('path')
+const { promisify } = require('util')
+
+const read = promisify(fs.readFile)
+
+async function fn() {
+	try {
+		const file = await read(join(__dirname, './files/test.js'))
+		console.log(file.toString())
+	} catch(err) {
+		throw err
+	}
+}
+
+fn()
+```
+
