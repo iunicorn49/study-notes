@@ -49,9 +49,9 @@
   ```javascript
   exports.something = 'something'
   module.exports.something = 'something'
-  
+
   // 上面两句话是一样的
-  
+
   exports = 'something' // 这个是错误的, 会导致找不到该模块
   module.exports = 'something' // 这个可以正常使用, 该模块就是 something
   ```
@@ -366,11 +366,11 @@ setTimeout(() => {
 
 > 异步读取文件 .	
 
-| 参数     | 类型     | 备注                                                         |
-| -------- | -------- | ------------------------------------------------------------ |
-| 路径     | String   | 必填                                                         |
-| decode   | String   | 选填, 默认直接返回 **Buffer** 对象, 可以选择 `utf-8` 等, 直接读取文件, 返回字符串 . |
-| 回调函数 | Function | 必填, 参数: **err\|file** .                                  |
+| 参数     | 类型       | 备注                                       |
+| ------ | -------- | ---------------------------------------- |
+| 路径     | String   | 必填                                       |
+| decode | String   | 选填, 默认直接返回 **Buffer** 对象, 可以选择 `utf-8` 等, 直接读取文件, 返回字符串 . |
+| 回调函数   | Function | 必填, 参数: **err\|file** .                  |
 
 #### fs.readFileSync
 
@@ -389,12 +389,12 @@ console.log(data)
 
 > 写文件 .
 
-| 参数     | 类型           | 备注                                         |
-| -------- | -------------- | -------------------------------------------- |
-| 路径     | String         | 必填                                         |
-| 内容     | String\|Buffer | 必填, 写入的信息, 如果是Buffer会忽略配置项 . |
-| 配置项   | Object\|String | 看文档吧 .                                   |
-| 回调函数 | Function       | 必填 .                                       |
+| 参数   | 类型             | 备注                           |
+| ---- | -------------- | ---------------------------- |
+| 路径   | String         | 必填                           |
+| 内容   | String\|Buffer | 必填, 写入的信息, 如果是Buffer会忽略配置项 . |
+| 配置项  | Object\|String | 看文档吧 .                       |
+| 回调函数 | Function       | 必填 .                         |
 
 ```javascript
 const fs = require('fs')
@@ -595,3 +595,30 @@ async function fn() {
 fn()
 ```
 
+## 测试
+
+###断言 - assert
+
+> node 内置 assert 函数来做断言(也就是测试).
+>
+> 但是十分简陋, 市面上有断言库(chaijs)可以用.
+>
+> BDD: 行为驱动开发
+>
+> TDD: 测试驱动开发
+
+chaijs网址: http://www.chaijs.com/
+
+### 测试用例 - Mocha
+
+> Mocha 是一个 js 的测试框架.
+
+mochajs: https://mochajs.org/
+
+### 测试覆盖率 - istanbul
+
+istanbul: https://github.com/gotwarlost/istanbul
+
+### 持续集成
+
+慕课视频: https://coding.imooc.com/lesson/146.html#mid=7684

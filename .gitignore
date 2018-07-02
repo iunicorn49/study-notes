@@ -6,3 +6,7 @@ node_modules/
 .idea/
 .DS_Store
 build/
+screenshot/*.png
+mn/*.png
+mn/*.jpg
+mn/*.gif
